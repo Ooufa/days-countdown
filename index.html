@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Days Countdown</title>
+
+  <!-- ✅ Import Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Lato:wght@400;700&family=Montserrat:wght@400;600&family=Raleway:wght@400;700&family=Nunito+Sans:wght@400;700&family=Karla:wght@400;700&family=Open+Sans:wght@400;700&family=Quicksand:wght@400;700&family=Dancing+Script:wght@500;700&family=Great+Vibes&display=swap" rel="stylesheet">
+
   <style>
     html, body {
       margin: 0;
@@ -29,22 +33,10 @@
       box-sizing: border-box;
     }
 
-    .form-group {
-      margin-bottom: 1rem;
-      text-align: left;
-    }
+    .form-group { margin-bottom: 1rem; text-align: left; }
+    label { font-weight: 600; display: block; margin-bottom: 0.3rem; }
 
-    label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 0.3rem;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    textarea,
-    input[type="color"],
-    select {
+    input, textarea, select {
       width: 100%;
       padding: 0.5rem;
       border: 1px solid #cbd5e1;
@@ -53,10 +45,7 @@
       box-sizing: border-box;
     }
 
-    textarea {
-      resize: vertical;
-      height: 60px;
-    }
+    textarea { resize: vertical; height: 60px; }
 
     button {
       background: #3b82f6;
@@ -67,10 +56,7 @@
       cursor: pointer;
       font-size: 1rem;
     }
-
-    button:hover {
-      background: #2563eb;
-    }
+    button:hover { background: #2563eb; }
 
     .edit-btn {
       background: none;
@@ -84,22 +70,9 @@
       padding: 2px;
     }
 
-    .edit-btn:hover {
-      transform: scale(1.1);
-    }
-
-    .quote {
-      font-style: italic;
-      margin-bottom: 1.2rem;
-      font-size: 1.1rem;
-      white-space: pre-wrap;
-    }
-
-    h2 {
-      margin-bottom: 1.5rem;
-      text-align: center;
-      font-size: 1.3rem;
-    }
+    .edit-btn:hover { transform: scale(1.1); }
+    .quote { font-style: italic; margin-bottom: 1.2rem; font-size: 1.1rem; white-space: pre-wrap; }
+    h2 { margin-bottom: 1.5rem; text-align: center; font-size: 1.3rem; }
   </style>
 </head>
 <body>
@@ -142,14 +115,20 @@
         <input type="color" id="textColor" value="#1e293b" />
       </div>
 
+      <!-- ✅ Font Selector with 10 Diverse Fonts -->
       <div class="form-group">
         <label>Font Style:</label>
         <select id="fontStyle">
-          <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Modern (Default)</option>
-          <option value="'Times New Roman', serif">Classic</option>
-          <option value="'Courier New', monospace">Typewriter</option>
-          <option value="'Comic Sans MS', cursive, sans-serif">Playful</option>
-          <option value="'Poppins', sans-serif">Clean Rounded</option>
+          <option value="'Poppins', sans-serif">Poppins (Clean)</option>
+          <option value="'Lato', sans-serif">Lato (Friendly)</option>
+          <option value="'Montserrat', sans-serif">Montserrat (Modern)</option>
+          <option value="'Raleway', sans-serif">Raleway (Elegant)</option>
+          <option value="'Nunito Sans', sans-serif">Nunito Sans (Soft)</option>
+          <option value="'Karla', sans-serif">Karla (Professional)</option>
+          <option value="'Open Sans', sans-serif">Open Sans (Classic)</option>
+          <option value="'Quicksand', sans-serif">Quicksand (Rounded)</option>
+          <option value="'Dancing Script', cursive">Dancing Script (Connected)</option>
+          <option value="'Great Vibes', cursive">Great Vibes (Flowing)</option>
         </select>
       </div>
 
@@ -170,9 +149,7 @@
       const today = new Date();
       const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
       const formattedDate = today.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
+        day: "2-digit", month: "long", year: "numeric"
       });
       return { dayName, formattedDate };
     }
@@ -184,36 +161,33 @@
     }
 
     function showCountdown() {
-      const eventName = document.getElementById("eventName").value;
-      const eventDate = document.getElementById("eventDate").value;
-      const eventQuote = document.getElementById("eventQuote").value;
-      const eventColor = document.getElementById("eventColor").value;
-      const countColor = document.getElementById("countColor").value;
-      const bgColor = document.getElementById("bgColor").value;
-      const textColor = document.getElementById("textColor").value;
-      const fontStyle = document.getElementById("fontStyle").value;
+      const settings = {
+        eventName: document.getElementById("eventName").value,
+        eventDate: document.getElementById("eventDate").value,
+        eventQuote: document.getElementById("eventQuote").value,
+        eventColor: document.getElementById("eventColor").value,
+        countColor: document.getElementById("countColor").value,
+        bgColor: document.getElementById("bgColor").value,
+        textColor: document.getElementById("textColor").value,
+        fontStyle: document.getElementById("fontStyle").value
+      };
 
-      if (!eventName || !eventDate) {
+      if (!settings.eventName || !settings.eventDate) {
         alert("Please fill in the event name and date.");
         return;
       }
 
-      const settings = {
-        eventName, eventDate, eventQuote,
-        eventColor, countColor, bgColor, textColor, fontStyle
-      };
       localStorage.setItem("countdownSettings", JSON.stringify(settings));
       renderCountdown(settings);
     }
 
     function renderCountdown(settings) {
       const { eventName, eventDate, eventQuote, eventColor, countColor, bgColor, textColor, fontStyle } = settings;
+
       const card = document.getElementById("countdownCard");
       card.style.background = bgColor;
       card.style.color = textColor;
       card.style.fontFamily = fontStyle;
-
-      document.querySelectorAll("label, h2").forEach(el => el.style.color = textColor);
 
       const { dayName, formattedDate } = formatToday();
       const daysRemaining = calculateDaysLeft(eventDate);
@@ -226,47 +200,17 @@
 
       document.getElementById("setupForm").style.display = "none";
       document.getElementById("output").style.display = "block";
-
-      resizeForMiro();
-      scheduleMidnightUpdate(settings);
-    }
-
-    function resizeForMiro() {
-      const cardHeight = document.getElementById("countdownCard").scrollHeight + 20;
-      if (window.parent) {
-        window.parent.postMessage({ type: "resize", height: cardHeight }, "*");
-      }
-      document.body.style.height = cardHeight + "px";
-    }
-
-    function scheduleMidnightUpdate(settings) {
-      const now = new Date();
-      const msUntilMidnight =
-        new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5) - now;
-      setTimeout(() => renderCountdown(settings), msUntilMidnight);
     }
 
     function editForm() {
       document.getElementById("setupForm").style.display = "block";
       document.getElementById("output").style.display = "none";
-      resizeForMiro();
     }
 
     window.onload = () => {
       const saved = localStorage.getItem("countdownSettings");
       if (saved) {
-        const settings = JSON.parse(saved);
-        document.getElementById("eventName").value = settings.eventName;
-        document.getElementById("eventDate").value = settings.eventDate;
-        document.getElementById("eventQuote").value = settings.eventQuote;
-        document.getElementById("eventColor").value = settings.eventColor;
-        document.getElementById("countColor").value = settings.countColor;
-        document.getElementById("bgColor").value = settings.bgColor;
-        document.getElementById("textColor").value = settings.textColor;
-        document.getElementById("fontStyle").value = settings.fontStyle;
-        renderCountdown(settings);
-      } else {
-        resizeForMiro();
+        renderCountdown(JSON.parse(saved));
       }
     };
   </script>
