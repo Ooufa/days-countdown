@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -16,7 +16,6 @@
       height: 100%;
       overflow: hidden;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      color: #1e293b;
     }
 
     .card {
@@ -45,7 +44,8 @@
     input[type="text"],
     input[type="date"],
     textarea,
-    input[type="color"] {
+    input[type="color"],
+    input[type="file"] {
       width: 100%;
       padding: 0.5rem;
       border: 1px solid #cbd5e1;
@@ -101,6 +101,13 @@
       color: #334155;
       font-size: 1.3rem;
     }
+
+    #uploadedImage {
+      margin-top: 1rem;
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
@@ -138,6 +145,16 @@
         <input type="color" id="bgColor" value="#ffffff" />
       </div>
 
+      <div class="form-group">
+        <label>Text Color (for all other text):</label>
+        <input type="color" id="textColor" value="#1e293b" />
+      </div>
+
+      <div class="form-group">
+        <label>Upload an Image:</label>
+        <input type="file" id="imageUpload" accept="image/*" />
+      </div>
+
       <button type="button" onclick="showCountdown()">Calculate</button>
     </form>
 
@@ -147,6 +164,7 @@
       <p>Today is</p>
       <p id="todayDate"></p>
       <p id="daysText"></p>
+      <img id="uploadedImage" style="display:none;" />
     </div>
   </div>
 
@@ -175,21 +193,43 @@
       const eventColor = document.getElementById("eventColor").value;
       const countColor = document.getElementById("countColor").value;
       const bgColor = document.getElementById("bgColor").value;
+      const textColor = document.getElementById("textColor").value;
+
+      const imageInput = document.getElementById("imageUpload");
+      const reader = new FileReader();
 
       if (!eventName || !eventDate) {
         alert("Please fill in the event name and date.");
         return;
       }
 
-      const settings = { eventName, eventDate, eventQuote, eventColor, countColor, bgColor };
-      localStorage.setItem("countdownSettings", JSON.stringify(settings));
-      renderCountdown(settings);
+      reader.onload = function(e) {
+        const imageData = e.target.result;
+        const settings = {
+          eventName, eventDate, eventQuote,
+          eventColor, countColor, bgColor, textColor, imageData
+        };
+        localStorage.setItem("countdownSettings", JSON.stringify(settings));
+        renderCountdown(settings);
+      };
+
+      if (imageInput.files.length > 0) {
+        reader.readAsDataURL(imageInput.files[0]);
+      } else {
+        const settings = {
+          eventName, eventDate, eventQuote,
+          eventColor, countColor, bgColor, textColor, imageData: null
+        };
+        localStorage.setItem("countdownSettings", JSON.stringify(settings));
+        renderCountdown(settings);
+      }
     }
 
     function renderCountdown(settings) {
-      const { eventName, eventDate, eventQuote, eventColor, countColor, bgColor } = settings;
+      const { eventName, eventDate, eventQuote, eventColor, countColor, bgColor, textColor, imageData } = settings;
       const card = document.getElementById("countdownCard");
       card.style.background = bgColor;
+      card.style.color = textColor;
 
       const { dayName, formattedDate } = formatToday();
       const daysRemaining = calculateDaysLeft(eventDate);
@@ -200,6 +240,14 @@
         `Days remaining till "<span style="color:${eventColor}">${eventName}</span>": ` +
         `<span style="color:${countColor}; font-weight:600;">${daysRemaining} Days</span>`;
 
+      const img = document.getElementById("uploadedImage");
+      if (imageData) {
+        img.src = imageData;
+        img.style.display = "block";
+      } else {
+        img.style.display = "none";
+      }
+
       document.getElementById("setupForm").style.display = "none";
       document.getElementById("output").style.display = "block";
 
@@ -208,7 +256,6 @@
     }
 
     function resizeForMiro() {
-      // Dynamically resize iframe height to match card height (for Miro)
       const cardHeight = document.getElementById("countdownCard").scrollHeight + 20;
       if (window.parent) {
         window.parent.postMessage({ type: "resize", height: cardHeight }, "*");
@@ -239,6 +286,7 @@
         document.getElementById("eventColor").value = settings.eventColor;
         document.getElementById("countColor").value = settings.countColor;
         document.getElementById("bgColor").value = settings.bgColor;
+        document.getElementById("textColor").value = settings.textColor || "#1e293b";
         renderCountdown(settings);
       } else {
         resizeForMiro();
@@ -247,4 +295,3 @@
   </script>
 </body>
 </html>
-
