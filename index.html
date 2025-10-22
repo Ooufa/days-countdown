@@ -5,10 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Days Countdown</title>
   <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    html, body {
       margin: 0;
-      background: transparent; /* transparent page background for embeds */
+      padding: 0;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       color: #1e293b;
     }
 
@@ -22,7 +29,6 @@
       transition: all 0.3s ease;
       position: relative;
       box-sizing: border-box;
-      margin: 0 auto;
     }
 
     .form-group {
@@ -197,7 +203,17 @@
       document.getElementById("setupForm").style.display = "none";
       document.getElementById("output").style.display = "block";
 
+      resizeForMiro();
       scheduleMidnightUpdate(settings);
+    }
+
+    function resizeForMiro() {
+      // Dynamically resize iframe height to match card height (for Miro)
+      const cardHeight = document.getElementById("countdownCard").scrollHeight + 20;
+      if (window.parent) {
+        window.parent.postMessage({ type: "resize", height: cardHeight }, "*");
+      }
+      document.body.style.height = cardHeight + "px";
     }
 
     function scheduleMidnightUpdate(settings) {
@@ -210,6 +226,7 @@
     function editForm() {
       document.getElementById("setupForm").style.display = "block";
       document.getElementById("output").style.display = "none";
+      resizeForMiro();
     }
 
     window.onload = () => {
@@ -223,6 +240,8 @@
         document.getElementById("countColor").value = settings.countColor;
         document.getElementById("bgColor").value = settings.bgColor;
         renderCountdown(settings);
+      } else {
+        resizeForMiro();
       }
     };
   </script>
