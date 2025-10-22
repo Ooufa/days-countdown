@@ -15,7 +15,6 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .card {
@@ -45,12 +44,13 @@
     input[type="date"],
     textarea,
     input[type="color"],
-    input[type="file"] {
+    select {
       width: 100%;
       padding: 0.5rem;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
       font-size: 1rem;
+      box-sizing: border-box;
     }
 
     textarea {
@@ -98,15 +98,7 @@
     h2 {
       margin-bottom: 1.5rem;
       text-align: center;
-      color: #334155;
       font-size: 1.3rem;
-    }
-
-    #uploadedImage {
-      margin-top: 1rem;
-      max-width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
   </style>
 </head>
@@ -151,8 +143,14 @@
       </div>
 
       <div class="form-group">
-        <label>Upload an Image:</label>
-        <input type="file" id="imageUpload" accept="image/*" />
+        <label>Font Style:</label>
+        <select id="fontStyle">
+          <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Modern (Default)</option>
+          <option value="'Times New Roman', serif">Classic</option>
+          <option value="'Courier New', monospace">Typewriter</option>
+          <option value="'Comic Sans MS', cursive, sans-serif">Playful</option>
+          <option value="'Poppins', sans-serif">Clean Rounded</option>
+        </select>
       </div>
 
       <button type="button" onclick="showCountdown()">Calculate</button>
@@ -164,7 +162,6 @@
       <p>Today is</p>
       <p id="todayDate"></p>
       <p id="daysText"></p>
-      <img id="uploadedImage" style="display:none;" />
     </div>
   </div>
 
@@ -194,42 +191,29 @@
       const countColor = document.getElementById("countColor").value;
       const bgColor = document.getElementById("bgColor").value;
       const textColor = document.getElementById("textColor").value;
-
-      const imageInput = document.getElementById("imageUpload");
-      const reader = new FileReader();
+      const fontStyle = document.getElementById("fontStyle").value;
 
       if (!eventName || !eventDate) {
         alert("Please fill in the event name and date.");
         return;
       }
 
-      reader.onload = function(e) {
-        const imageData = e.target.result;
-        const settings = {
-          eventName, eventDate, eventQuote,
-          eventColor, countColor, bgColor, textColor, imageData
-        };
-        localStorage.setItem("countdownSettings", JSON.stringify(settings));
-        renderCountdown(settings);
+      const settings = {
+        eventName, eventDate, eventQuote,
+        eventColor, countColor, bgColor, textColor, fontStyle
       };
-
-      if (imageInput.files.length > 0) {
-        reader.readAsDataURL(imageInput.files[0]);
-      } else {
-        const settings = {
-          eventName, eventDate, eventQuote,
-          eventColor, countColor, bgColor, textColor, imageData: null
-        };
-        localStorage.setItem("countdownSettings", JSON.stringify(settings));
-        renderCountdown(settings);
-      }
+      localStorage.setItem("countdownSettings", JSON.stringify(settings));
+      renderCountdown(settings);
     }
 
     function renderCountdown(settings) {
-      const { eventName, eventDate, eventQuote, eventColor, countColor, bgColor, textColor, imageData } = settings;
+      const { eventName, eventDate, eventQuote, eventColor, countColor, bgColor, textColor, fontStyle } = settings;
       const card = document.getElementById("countdownCard");
       card.style.background = bgColor;
       card.style.color = textColor;
+      card.style.fontFamily = fontStyle;
+
+      document.querySelectorAll("label, h2").forEach(el => el.style.color = textColor);
 
       const { dayName, formattedDate } = formatToday();
       const daysRemaining = calculateDaysLeft(eventDate);
@@ -239,14 +223,6 @@
       document.getElementById("daysText").innerHTML =
         `Days remaining till "<span style="color:${eventColor}">${eventName}</span>": ` +
         `<span style="color:${countColor}; font-weight:600;">${daysRemaining} Days</span>`;
-
-      const img = document.getElementById("uploadedImage");
-      if (imageData) {
-        img.src = imageData;
-        img.style.display = "block";
-      } else {
-        img.style.display = "none";
-      }
 
       document.getElementById("setupForm").style.display = "none";
       document.getElementById("output").style.display = "block";
@@ -286,7 +262,8 @@
         document.getElementById("eventColor").value = settings.eventColor;
         document.getElementById("countColor").value = settings.countColor;
         document.getElementById("bgColor").value = settings.bgColor;
-        document.getElementById("textColor").value = settings.textColor || "#1e293b";
+        document.getElementById("textColor").value = settings.textColor;
+        document.getElementById("fontStyle").value = settings.fontStyle;
         renderCountdown(settings);
       } else {
         resizeForMiro();
