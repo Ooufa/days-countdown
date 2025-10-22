@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personalized Days Countdown</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 360px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    input[type="color"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    textarea {
+      resize: vertical;
+      height: 60px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .edit-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      color: #475569;
+      padding: 2px;
+    }
+    .edit-btn:hover {
+      transform: scale(1.1);
+    }
+    .quote {
+      font-style: italic;
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+    }
+    h2 {
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: #334155;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="countdownCard">
+    <form id="setupForm">
+      <h2>Custom Days Countdown Timer</h2>
+
+      <div class="form-group">
+        <label>Event Name:</label>
+        <input type="text" id="eventName" placeholder="e.g. End of 2025" required />
+      </div>
+
+      <div class="form-group">
+        <label>Desired Event Date:</label>
+        <input type="date" id="eventDate" required />
+      </div>
+
+      <div class="form-group">
+        <label>Quote (You can use emojis 💫💖):</label>
+        <textarea id="eventQuote" placeholder="Enter your motivational quote..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Color for Event Name:</label>
+        <input type="color" id="eventColor" value="#ff4d4d" />
+      </div>
+
+      <div class="form-group">
+        <label>Color for Countdown Number & Dates:</label>
+        <input type="color" id="countColor" value="#3b82f6" />
+      </div>
+
+      <div class="form-group">
+        <label>Background Color (Widget box):</label>
+        <input type="color" id="bgColor" value="#ffffff" />
+      </div>
+
+      <button type="button" onclick="showCountdown()">Calculate</button>
+    </form>
+
+    <div id="output" style="display:none;">
+      <button class="edit-btn" title="Edit" onclick="editForm()">✏️</button>
+      <p class="quote" id="quoteText"></p>
+      <p>Today is</p>
+      <p id="todayDate"></p>
+      <p id="daysText"></p>
+    </div>
+  </div>
+
+  <script>
+    function formatToday() {
+      const today = new Date();
+      const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
+      const formattedDate = today.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+      return { dayName, formattedDate };
+    }
+
+    function calculateDaysLeft(targetDate) {
+      const today = new Date();
+      const end = new Date(targetDate);
+      return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    }
+
+    function showCountdown() {
+      const eventName = document.getElementById("eventName").value;
+      const eventDate = document.getElementById("eventDate").value;
+      const eventQuote = document.getElementById("eventQuote").value;
+      const eventColor = document.getElementById("eventColor").value;
+      const countColor = document.getElementById("countColor").value;
+      const bgColor = document.getElementById("bgColor").value;
+
+      if (!eventName || !eventDate) {
+        alert("Please fill in the event name and date.");
+        return;
+      }
+
+      const settings = { eventName, eventDate, eventQuote, eventColor, countColor, bgColor };
+      localStorage.setItem("countdownSettings", JSON.stringify(settings));
+
+      renderCountdown(settings);
+    }
+
+    function renderCountdown(settings) {
+      const { eventName, eventDate, eventQuote, eventColor, countColor, bgColor } = settings;
+      const card = document.getElementById("countdownCard");
+      card.style.background = bgColor;
+
+      const { dayName, formattedDate } = formatToday();
+      const daysRemaining = calculateDaysLeft(eventDate);
+
+      document.getElementById("quoteText").textContent = eventQuote || "";
+      document.getElementById("todayDate").innerHTML = `" <span style="color:${countColor}">${dayName} ${formattedDate}</span> "`;
+      document.getElementById("daysText").innerHTML =
+        `Days remaining till "<span style="color:${eventColor}">${eventName}</span>": ` +
+        `<span style="color:${countColor}; font-weight:600;">${daysRemaining} Days</span>`;
+
+      document.getElementById("setupForm").style.display = "none";
+      document.getElementById("output").style.display = "block";
+
+      scheduleMidnightUpdate(settings);
+    }
+
+    function scheduleMidnightUpdate(settings) {
+      const now = new Date();
+      const msUntilMidnight =
+        new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5) - now;
+      setTimeout(() => renderCountdown(settings), msUntilMidnight);
+    }
+
+    function editForm() {
+      document.getElementById("setupForm").style.display = "block";
+      document.getElementById("output").style.display = "none";
+    }
+
+    window.onload = () => {
+      const saved = localStorage.getItem("countdownSettings");
+      if (saved) {
+        const settings = JSON.parse(saved);
+        document.getElementById("eventName").value = settings.eventName;
+        document.getElementById("eventDate").value = settings.eventDate;
+        document.getElementById("eventQuote").value = settings.eventQuote;
+        document.getElementById("eventColor").value = settings.eventColor;
+        document.getElementById("countColor").value = settings.countColor;
+        document.getElementById("bgColor").value = settings.bgColor;
+        renderCountdown(settings);
+      }
+    };
+  </script>
+</body>
+</html>
